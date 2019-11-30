@@ -14,3 +14,9 @@
 
 具体使用方法在 xGame.t 文件中
 
+
+
+## 参考项目
+
+[点击查看仓库](https://github.com/xxxxue/sdxl2_fuzu)
+
