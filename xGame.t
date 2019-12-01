@@ -9,7 +9,7 @@
 --┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
 
 
---框架适用于 指端精灵/飞天助手
+--框架适用于 指端精灵
 
 
 --文件介绍:
@@ -230,6 +230,14 @@ end
 function xGame.DateRet(s)
     return XM.DateRet(s)
 end
+
+--获取区域内某种颜色的数量
+-- par: 色点table
+function xGame.FindNumRet(par)
+    XM.KeepScreen()    --刷新图色
+   return XM.FindNumRet(par)
+end 
+
 
 -----------------Msg/Log---START--------
 -- 控制台打印信息(支持字符串和table)
