@@ -210,6 +210,12 @@ function xGame.Find(...)
     return XM.Find(...)
 end
 
+--找色 
+--不刷新
+function xGame.Find2(...)    
+    return XM.Find(...)
+end
+
 --开关
 --	name: 唯一名称 	(进入一次后. 需要手动开启才可以再进入)
 -------------------------
