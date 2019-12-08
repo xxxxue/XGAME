@@ -209,7 +209,11 @@ end
 -- 同时调用 Keep 与 Find
 ------------------------
 function xGame.Find(...)
-    XM.KeepScreen()    --刷新图色
+    XM.KeepScreen()    --刷新图色    
+    return xGame.XMFind(...)    
+end
+
+function xGame.XMFind(...)
     return XM.Find(...)
 end
 
@@ -222,7 +226,7 @@ end
 --找色 
 --不刷新
 function xGame.FindNoCallKeep(...)    
-    return XM.Find(...)
+    return xGame.XMFind(...)
 end
 
 --循环找图
@@ -297,9 +301,8 @@ function xGame.FindManyTimes(...)
     
     local count = 0 
     
-    while true do
+    while true do        
         
-        lineprint(1)
         local findRes=false
         
         if isCallKeep then                       
@@ -338,7 +341,10 @@ end
 --偏移点击
 --	x,y: 坐标
 -- 	r: 偏移量
-function xGame.RndTap(x, y, r)
+function xGame.RndTap(x, y,msg, r)
+    if msg~="" and msg~=nil then
+        xGame.Show("点击: "..msg)   
+    end
     return XM.RndTap(x, y, r)
 end
 
@@ -486,12 +492,34 @@ function xGame.CheckRun(s)
     msg = msg .. "\n智能检测运行环境,正在启动【新版防封框架】..."
     
     msg = msg .. "\n---------------------------------------------"
-        
+    
     for i = s, 0, -1 do
         sleep(1000)        
         xGame.CenterMsg(msg .. "\n" .. i .. "秒后开始运行....")
     end
     
 end
+
+
+--数组/表  是否包含某个值
+--	arr: 表
+--	val: 要检查的值
+-- 	返回格式 : { 结果true/false , 位置下标}
+function xGame.ArrContainVal(arr,val)   
+    
+    if type(arr) ~="table" then
+        lineprint("xGame.ArrContainVal: arr不是table 类型")
+        return false        
+    end
+    
+    for i=1,#arr,1 do
+        if arr[i] == val then
+            return {true,i}
+        end
+    end
+    
+    return {false,0}
+end
+
 
 --------------------Util--END---------------

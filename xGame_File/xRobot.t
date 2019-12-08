@@ -175,8 +175,7 @@ function xRobot.ProcessState (stateTable, stateName, stateParam)
     
     if stateTable[stateName] ~= nil then
         return stateTable[stateName](stateParam)
-    end
-    xGame.Print(stateTable)	
+    end    
     lineprint("没有找到 【"..stateName.."】")
     return "Error"
 end
