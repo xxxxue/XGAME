@@ -8,14 +8,11 @@
 --┃		 									 ┃
 --┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
 
-
 --框架适用于 指端精灵
-
 
 --文件介绍:
 --xGame.t	--> 工具类
 --xRobot.t 	--> 框架类 (自动配置框架的文件)
-
 
 --使用步骤:
 
@@ -77,8 +74,6 @@
 
 --这个框架 为啥是两个文件,不能合成一个文件吗?
 --	答: 因为 xGame 和 xRobot 放同一个文件里  AIS IDE 就没有智能提示了.
-
-
 
 
 --------------------Util-----START---------------
@@ -188,6 +183,7 @@ end
 
 --初始化表格
 function xGame.InitTable(...)
+    
     local res
     if ... == nil then
         res = { ... }
@@ -202,6 +198,13 @@ function xGame.InitTable(...)
     return res
 end
 
+--获取数组的值 必须是H表的item
+--	格式: {"TableName","ItemName"}
+function xGame.GetTable(value)
+    return GetTable(value)
+end
+
+
 --找色
 -- 同时调用 Keep 与 Find
 ------------------------
@@ -210,17 +213,133 @@ function xGame.Find(...)
     return XM.Find(...)
 end
 
+--找色 (已废弃,请使用FindNotCallKeep)
+--不刷新
+--	兼容老版本
+function xGame.Find2(...)    
+    return xGame.FindNoCallKeep(...)  
+end
 --找色 
 --不刷新
-function xGame.Find2(...)    
+function xGame.FindNoCallKeep(...)    
     return XM.Find(...)
 end
+
+--循环找图
+--	colors,isClick: Find 参数
+--	timeOut: 超时时间 (单位:毫秒,默认 5秒)
+function xGame.FindWait(...)
+    --colors,isClick,timeOut
+    local arr= {...}
+    
+    local colors= arr[1]
+    local isClick= false
+    local timeOut = 5000
+    
+    if type(arr[2])=="number" then
+        timeOut = arr[2]
+    else
+        isClick= arr[2]
+        timeOut = arr[3] or 5000
+    end    
+    
+    local appendMsg=""
+    if timeOut/1000 < 200 then
+        appendMsg= appendMsg .." / "..(timeOut/1000)    
+    end
+    
+    local runTime = 0  
+    
+    while true do
+        if xGame.Find(colors,isClick) then
+            xGame.MsgClose()
+            return true
+        else
+            xGame.Show("等待["..colors[1].."]["..colors[2].."] --->计时: "..(runTime/1000)..appendMsg)
+            if runTime >= timeOut then
+                xGame.MsgClose()
+                return false
+            end
+        end
+        sleep(400)
+        runTime = runTime + 400
+    end    
+end
+
+--找色 并 多次确认
+--	colors: find 色点
+--	isClick: 是否点击 (可空)
+--	maxCount: 最大的验证次数
+--	sleepTime: 间隔时间
+function xGame.FindManyTimes(...)
+    --colors,isClick,maxCount,sleepTime,isKeep,countOut
+    local arr= {...}
+    
+    local colors= arr[1]
+    local isClick=false
+    local maxCount= 0
+    local sleepTime = 0
+    local isCallKeep = true
+    local countOut = 0
+    
+    if type(arr[2])=="boolean" then
+        isClick=arr[2] 
+        maxCount= arr[3]
+        sleepTime = arr[4]
+        isCallKeep= arr[5] or true
+        countOut= arr[6] or 5
+    else
+        maxCount= arr[2]
+        sleepTime = arr[3]
+        isCallKeep= arr[4] or true
+        countOut= arr[5] or 5
+    end
+    
+    local count = 0 
+    
+    while true do
+        
+        lineprint(1)
+        local findRes=false
+        
+        if isCallKeep then                       
+            findRes =xGame.Find(colors,isClick)            
+        else            
+            findRes =xGame.FindNoCallKeep(colors,isClick)
+        end
+        
+        if findRes then
+            count = count + 1 
+            
+            xGame.Show("验证["..colors[1].."]["..colors[2].."] --->次数: "..count.." / ".. maxCount)
+            
+            if count == maxCount then
+                xGame.MsgClose()
+                return true
+            end
+            
+        else
+            xGame.MsgClose()
+            return false
+        end    
+        
+        sleep(sleepTime)
+    end 
+end
+
 
 --开关
 --	name: 唯一名称 	(进入一次后. 需要手动开启才可以再进入)
 -------------------------
 function xGame.Switch(name)
     return XM.Switch(name)
+end
+
+--偏移点击
+--	x,y: 坐标
+-- 	r: 偏移量
+function xGame.RndTap(x, y, r)
+    return XM.RndTap(x, y, r)
 end
 
 --计时器
@@ -241,7 +360,7 @@ end
 -- par: 色点table
 function xGame.FindNumRet(par)
     XM.KeepScreen()    --刷新图色
-   return XM.FindNumRet(par)
+    return XM.FindNumRet(par)
 end 
 
 
@@ -258,6 +377,11 @@ function xGame.Msg(content,x,y)
     y= y or msgBoxPos_xy[2]
     
     XM.Msg(content, x, y)
+end
+
+--关闭信息框
+function xGame.MsgClose()
+    XM.MsgClose()
 end
 
 -- 屏幕中心 显示信息 (由于文字数量不同,取屏幕中心点来显示并不合理,所以是自己指定,)
@@ -335,13 +459,13 @@ end
 --检查设备是否符合运行要求
 --	s: 倒计时(单位:s   默认:3) 
 function xGame.CheckRun(s)   
-       
+    
     s= s or 3
     local msg = ""
     local list = XM.GetScreenSimulator() --当前分辨率    
     local folderName = xRobot.Get_Script_Options("logfolder_name")
     local floatwindow_xy = xRobot.Get_Script_Options("zd_floatwindow_location_xy")
-   
+    
     setfloatwindowlocation(floatwindow_xy[1], floatwindow_xy[2])   --移动 飞天悬浮窗到指定位置
     
     msg = msg .. "推荐分辨率: 720 * 1280  DPI: 320 \n当前分辨率: " .. list[1] .. " * " .. list[2] .. "  DPI: " .. list[3]
@@ -362,11 +486,9 @@ function xGame.CheckRun(s)
     msg = msg .. "\n智能检测运行环境,正在启动【新版防封框架】..."
     
     msg = msg .. "\n---------------------------------------------"
-    
-    
-    for i = s, 0, -1 do
-        sleep(1000)
         
+    for i = s, 0, -1 do
+        sleep(1000)        
         xGame.CenterMsg(msg .. "\n" .. i .. "秒后开始运行....")
     end
     

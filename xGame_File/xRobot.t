@@ -52,7 +52,7 @@ function xRobot.Run(name)
     if name=="" or name == nil then
         while true do
             
-            lineprint("没有指定Run入口,脚本启动失败..")
+            lineprint("xRobot.Run  name 不能为空")
             sleep(3000)
         end
     end
@@ -110,6 +110,7 @@ function xRobot.Main()
     Unit.State.Name, --调用的状态
     Unit.Param[Unit.State.Name]        --调用状态的参数    
     )    
+ 
     --休息间隔
     local sTime = xRobot.Get_Robot_Options("sleep_time")
     sleep(sTime)    
@@ -169,15 +170,16 @@ function xRobot.InitFrameWork()
     traceprint("xGame Init finish !")
 end
 
---注册机调用对应的方法
+--状态机调用对应的方法
 function xRobot.ProcessState (stateTable, stateName, stateParam)
-	
+    
     if stateTable[stateName] ~= nil then
         return stateTable[stateName](stateParam)
     end
+    xGame.Print(stateTable)	
+    lineprint("没有找到 【"..stateName.."】")
     return "Error"
 end
-
 
 --
 --悬浮窗启动按钮入口
@@ -197,7 +199,7 @@ function floatwinrun()
             xRobot.Main()        --所有脚本执行完毕 停止
         end
     else
-        xGame.Show("程序异常,状态机 State.Name 为空....")
+        traceprint("程序异常,状态机 State.Name 为空,请使用xRobot.Run 指定入口")
     end
     lineprint("脚本结束")
     sleep(1000)
