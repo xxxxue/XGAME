@@ -45,7 +45,11 @@ scale_xy = { 720, 1280 }                        --编写脚本的分辨率
 }
 ----------------Options-Table-------END--------------------
 
-xRobot={}
+xRobot={
+InitSettings=nil
+,BeforeRun=nil
+
+}
 
 -- 指定 脚本 任务 入口
 function xRobot.Run(name)
@@ -94,6 +98,16 @@ end
 function xRobot.Set_Script_Options(key,val)
     H["Script_Options"][key]=val
 end
+
+--初始化设置
+function xRobot.Set_InitSettings(val)
+    xRobot.InitSettings=val
+end
+
+--在Task之前执行(仅执行一次)
+function xRobot.Set_BeforeRun(val)
+    xRobot.BeforeRun=val
+end
 ---------------------Getter--Setter---END--------------------
 
 
@@ -110,7 +124,7 @@ function xRobot.Main()
     Unit.State.Name, --调用的状态
     Unit.Param[Unit.State.Name]        --调用状态的参数    
     )    
- 
+    
     --休息间隔
     local sTime = xRobot.Get_Robot_Options("sleep_time")
     sleep(sTime)    
@@ -135,6 +149,7 @@ function xRobot.InitGlobalVariable()
     HomeKeyPositionEnum = { 下 = 0, 右 = 1, 左 = 2, 上 = 3, }
 end
 
+
 --初始化脚本框架
 function xRobot.InitFrameWork()
     
@@ -144,7 +159,12 @@ function xRobot.InitFrameWork()
     
     setmetatable(xGame,{__index=XM})	--继承 XM 的所有方法
     
-    XM.AddTable(H) --添加 XM 特征表
+    XM.AddTable(H) --添加 XM 特征表    
+    
+    if xRobot.InitSettings ~= nil then
+        xRobot.InitSettings()
+        lineprint("------------------------InitSettings Success------------------")
+    end
     
     --打开 XM Log日志
     local xmlog_sw = xRobot.Get_Robot_Options("xmlog_sw")
@@ -183,12 +203,19 @@ end
 --
 --悬浮窗启动按钮入口
 --
-function floatwinrun()
+function floatwinrun()    
     
-    xRobot.InitFrameWork()
+    xRobot.InitFrameWork()    
     
     if Unit.State.Name ~= "" then
         lineprint("脚本开始")
+        
+        --执行用户自定义的BeforeRun
+        if xRobot.BeforeRun ~= null then        
+            xRobot.BeforeRun()  
+            lineprint("BeforeRun 执行成功")
+        end          
+        
         if xRobot.Get_Robot_Options("loop_sw") then
             while true do
                 --所有脚本执行完毕 无限循环
