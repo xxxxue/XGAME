@@ -186,5 +186,5 @@ pause
 
 ## 参考项目
 
-[点击查看仓库](https://github.com/xxxxue/sdxl2_fuzu)
+[点击查看仓库](https://github.com/xxxxue/sdxl2_fuzhu)
 
